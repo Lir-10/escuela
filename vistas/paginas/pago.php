@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+ 
+
 if(!isset($_SESSION['rol'])){
 
     header('location: ../../Login/index.php');
@@ -45,6 +47,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+  <script src="https://cdn.conekta.io/js/latest/conekta.js"></script>
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -189,12 +193,102 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <div class="row">
             <div class="col-md-12">
-A
+PayPal
+
+<div class="tab-pane active" id="pago">
+
+                                <script src="https://www.paypal.com/sdk/js?client-id=AUIKkAZ8cv6NzyVdiH_CEte9FCZWZ-NzzcDfh6cyFZsPh7nxjYqTpsxumqZj0JMnoTsdJJYlYto47g5O"></script>
+                                <div id="paypal-button-container"></div>
+                                <script>
+  paypal.Buttons({
+  style: {
+    disableMaxWidth: true 
+  },
+}).render('#paypal-button-container');
+</script>
+                                <script>
+                                                                        // Dentro del bloque <script>
+                                    paypal.Button.render({
+                                        env: 'sandbox', // Cambia a 'production' en producción
+                                        client: {
+                                            sandbox: 'AUIKkAZ8cv6NzyVdiH_CEte9FCZWZ-NzzcDfh6cyFZsPh7nxjYqTpsxumqZj0JMnoTsdJJYlYto47g5O',
+                                            // production: 'TU_CLIENT_ID'
+                                        },
+                                        commit: true,
+                                        payment: function(data, actions) {
+                                            return actions.payment.create({
+                                                payment: {
+                                                    transactions: [
+                                                        {
+                                                            amount: {
+                                                                total: '1300',
+                                                                currency: 'MXN' // Cambia a la moneda deseada
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            });
+                                        },
+                                        onAuthorize: function(data, actions) {
+                                            return actions.payment.execute().then(function() {
+                                                // Lógica después de que el pago se haya ejecutado
+                                                // Redirigir o mostrar un mensaje de éxito
+                                            });
+                                        }
+                                    }, '#paypal-button');
+
+                                </script>
+
+
+
+                                </div>
+                                
+                            </div>
             </div>
 
 
             <div class="col-md-12">
-B
+            Conekta
+            <?php
+require 'vendor/conekta/autoload.php'; // Asegúrate de que la ruta sea correcta
+
+\Conekta\Conekta::setApiKey('key_mMSk1MzwOYiDGRbqOk6XogJ'); // Reemplaza con tu clave privada
+
+// Crear el link de pago
+try {
+    $order = \Conekta\Order::create(array(
+        'line_items' => array(
+            array(
+                'name' => 'Producto de prueba',
+                'unit_price' => 2000, // Precio en centavos
+                'quantity' => 1,
+            ),
+        ),
+        'currency' => 'MXN', // Moneda
+        'customer_info' => array(
+            'name' => 'Nombre del cliente',
+            'email' => 'cliente@example.com',
+        ),
+        'charges' => array(
+            array(
+                'payment_method' => array(
+                    'type' => 'oxxo_cash', // Tipo de pago (oxxo_cash, spei, card, etc.)
+                ),
+            ),
+        ),
+    ));
+
+    // Obtener el URL del link de pago
+    $payment_url = $order->charges[0]->payment_method->url;
+    
+    echo "Link de Pago: <a href='$payment_url' target='_blank'>$payment_url</a>";
+} catch (\Conekta\Handler $e) {
+    echo "Error: " . $e->getMessage();
+}
+?>
+
+                          
+
             </div>
 
             <!-- /.col -->
